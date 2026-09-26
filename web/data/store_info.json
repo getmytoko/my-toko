@@ -1,0 +1,14 @@
+{
+  "nama_toko": "MyToko Cake & Pastry",
+  "tagline": "Dibuat dengan bahan pilihan, langsung dari dapur kami",
+  "deskripsi": "MyToko Cake & Pastry adalah toko kue rumahan yang mengutamakan kualitas bahan dan cita rasa. Setiap olahan dibuat fresh setiap hari dengan resep turun-temurun dan disukai banyak pelanggan.",
+  "whatsapp": "+6281234567890",
+  "email": "halo@mytoko.example",
+  "instagram": "https://instagram.com/mytoko.example",
+  "instagram_handle": "@mytoko.example",
+  "alamat_toko": "Jl. Melati No. 12, Kel. Sukamaju, Kec. Jatinangor",
+  "jam_operasional": "Setiap hari, 08.00 - 21.00 WIB",
+  "foto_toko": "images/uploads/default-store.jpg",
+  "announcement": "",
+  "qris": ""
+}

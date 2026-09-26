@@ -1,9 +1,24 @@
 <!DOCTYPE html>
+<!--
+  ============================================================
+  DEV ONLY — JANGAN DIPAKAI UNTUK TOKO.
+  ============================================================
+  Berkas ini hanya untuk menguji desain baru di repo master
+  (lihat style.css & app.js hasil build secara langsung).
+
+  index.html (yang dipakai setup.php untuk toko baru) memakai
+  aset dari jsDelivr:
+    https://cdn.jsdelivr.net/gh/getmytoko/katalog-umkm@main/web/style.css
+
+  File ini TIDAK pernah disalin setup.php ke folder toko,
+  jadi aman dipakai hanya di repo master.
+  ============================================================
+-->
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MyToko</title>
+  <title>MyToko — DEV LOKAL</title>
   <meta name="description" content="Katalog online UMKM — pesan langsung via WhatsApp" />
   <meta name="theme-color" content="#23103a" />
   <link
@@ -22,17 +37,11 @@
     rel="stylesheet"
   />
 
-  <!-- Aset Terpusat dari Repo Master via jsDelivr -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/getmytoko/katalog-umkm@main/web/style.css" />
+  <!-- Aset LOKAL untuk iterasi cepat (lihat catatan di atas) -->
+  <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body>
-  <!--
-    SHELL TUNGGAL — seluruh UI (navbar, hero, katalog, modal, keranjang,
-    form checkout WhatsApp, dll.) digambar otomatis oleh app.js (CDN master)
-    berdasarkan data lokal ./data/products.json dan ./data/store_info.json.
-    Markup ini TIDAK diubah — hanya style.css & font yang direvisi.
-  -->
   <div id="app" class="min-h-screen flex flex-col bg-app text-body">
     <div class="app-boot" id="app-boot">
       <div class="spinner" aria-hidden="true"></div>
@@ -40,6 +49,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/gh/getmytoko/katalog-umkm@main/web/app.js"></script>
+  <script src="./app.js"></script>
 </body>
 </html>

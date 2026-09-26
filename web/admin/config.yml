@@ -25,34 +25,46 @@ collections:
             label_singular: "Produk"
             summary: "{{fields.nama}} - {{fields.harga}}"
             fields:
+              - { label: "ID", name: "id", widget: "string", required: false, hint: "Kosongkan; terisi otomatis." }
               - { label: "Nama Produk", name: "nama", widget: "string" }
-              - label: "Kategori"
-                name: "kategori"
-                widget: "select"
-                options:
-                  - { label: "Signature", value: "Signature" }
-                  - { label: "Lapis Reguler", value: "Lapis Reguler" }
-                  - { label: "Donat Kukus", value: "Donat Kukus" }
-                  - { label: "Lapis Mini", value: "Lapis Mini" }
-                  - { label: "Dessert Cup", value: "Dessert Cup" }
+              - { label: "Kategori", name: "kategori", widget: "string", hint: "Ketik nama kategori. Daftar lengkap dikelola di Pengaturan Toko (Kategori Produk)." }
               - {
                   label: "Harga",
                   name: "harga",
                   widget: "string",
                   pattern: ["^Rp[0-9.]+$", "Format harga harus diawali Rp, contoh: Rp46.000"],
+                  hint: "Contoh: Rp46.000"
                 }
-              - { label: "Foto Produk", name: "gambar", widget: "image" }
+              - { label: "Stok", name: "stok", widget: "number", value_type: "int", default: 10, min: 0 }
+              - { label: "Satuan", name: "unit", widget: "string", default: "unit" }
+              - { label: "Foto Produk", name: "gambar", widget: "image", allow_multiple: false }
               - { label: "Deskripsi (opsional)", name: "deskripsi", widget: "text", required: false }
 
   - name: "pengaturan_bisnis"
     label: "Pengaturan Toko"
     files:
-      - file: "web/data/settings.json"
+      - file: "web/data/store_info.json"
         label: "Pengaturan Toko"
         name: "pengaturan"
-        description: "Data identitas toko yang tampil di bar paling atas website."
+        description: "Identitas toko, promo, dan kontak yang tampil di seluruh halaman katalog."
         fields:
           - { label: "Nama Toko", name: "nama_toko", widget: "string", default: "MyToko" }
-          - { label: "Nomor WhatsApp", name: "whatsapp_toko", widget: "string", default: "+6281234567890" }
-          - { label: "Foto Toko", name: "foto_toko", widget: "image", hint: "Foto fisik toko untuk halaman lokasi" }
-          - { label: "Alamat Toko", name: "alamat_toko", widget: "text", hint: "Deskripsi alamat lengkap fisik toko" }
+          - { label: "Tagline", name: "tagline", widget: "string", required: false }
+          - { label: "Deskripsi Toko", name: "deskripsi", widget: "text", required: false, hint: "Tampil di halaman Tentang" }
+          - { label: "Nomor WhatsApp", name: "whatsapp", widget: "string", default: "+6281234567890", hint: "Gunakan format internasional, mis. +6281234567890" }
+          - { label: "Email", name: "email", widget: "string", required: false }
+          - { label: "Instagram (URL)", name: "instagram", widget: "string", required: false }
+          - { label: "Handle Instagram", name: "instagram_handle", widget: "string", required: false, hint: "Contoh: @mytoko.example" }
+          - { label: "Alamat Toko", name: "alamat_toko", widget: "text", required: false }
+          - { label: "Jam Operasional", name: "jam_operasional", widget: "string", required: false }
+          - {
+              label: "Kategori Produk",
+              name: "kategori",
+              widget: "list",
+              allow_add: true,
+              label_singular: "Kategori",
+              hint: "Daftar kategori yang dipilih produk. Tambah / ubah / hapus kategori di sini."
+            }
+          - { label: "Foto Toko", name: "foto_toko", widget: "image", required: false, hint: "Foto fisik toko untuk halaman Tentang" }
+          - { label: "Banner Promo", name: "announcement", widget: "text", required: false, hint: "Teks pengumuman/promo di atas hero" }
+          - { label: "Gambar QRIS", name: "qris", widget: "image", required: false, hint: "Kode QRIS untuk pembayaran di halaman keranjang" }

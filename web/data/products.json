@@ -4,29 +4,55 @@
       "nama": "Bolu Gulung Signature Talas Rasa Keju",
       "kategori": "Signature",
       "harga": "Rp46.000",
+      "stok": 15,
+      "unit": "rol",
       "gambar": "images/bolu-gulung-signature-talas.jpg",
-      "deskripsi": "Lembut dan creamy, perpaduan talas khas dengan rasa keju."
+      "deskripsi": "Lembut dan creamy, perpaduan talas khas dengan rasa keju. Sangat cocok untuk teman minum teh."
     },
     {
       "nama": "Donat Kukus Cokelat",
       "kategori": "Donat Kukus",
       "harga": "Rp42.000",
+      "stok": 20,
+      "unit": "box",
       "gambar": "images/donat-kukus-cokelat.jpg",
-      "deskripsi": ""
+      "deskripsi": "Donat kukus empuk dengan topping cokelat yang lumer. Satu box berisi 10 pcs."
     },
     {
       "nama": "Donat Kukus Talas Cokelat",
       "kategori": "Donat Kukus",
       "harga": "Rp25.000",
+      "stok": 0,
+      "unit": "box",
       "gambar": "images/donat-kukus-talas-cokelat.jpg",
-      "deskripsi": ""
+      "deskripsi": "Perpaduan rasa talas dan cokelat dalam satu gigitan."
+    },
+    {
+      "nama": "Lapis Legit Reguler",
+      "kategori": "Lapis Reguler",
+      "harga": "Rp150.000",
+      "stok": 8,
+      "unit": "loyang",
+      "gambar": "images/lapis-legit-reguler.jpg",
+      "deskripsi": "Lapis legit klasik 35 lapis, tekstur padat dan legit di mulut."
+    },
+    {
+      "nama": "Lapis Mini Camilan Manis",
+      "kategori": "Lapis Mini",
+      "harga": "Rp20.000",
+      "stok": 25,
+      "unit": "box",
+      "gambar": "images/lapis-mini-camilan.jpg",
+      "deskripsi": "Lapis mini ukuran sekali santap, cocok untuk hampers dan acara."
     },
     {
       "nama": "Dessert Cup Cookies and Cream",
       "kategori": "Dessert Cup",
       "harga": "Rp15.000",
+      "stok": 30,
+      "unit": "cup",
       "gambar": "images/dessert-cup-cookies-cream.jpg",
-      "deskripsi": "Dessert cup manis dengan topping cookies and cream."
+      "deskripsi": "Dessert cup manis dengan topping cookies and cream, dingin dan creamy."
     }
   ]
 }

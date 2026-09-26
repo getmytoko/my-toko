@@ -4,3 +4,6 @@ node_modules/
 # Log & file simpanan sementara
 *.log
 .DS_Store
+
+# Toko hasil generate setup.php (sudah jadi repo git sendiri)
+stores/
