@@ -1,7 +1,7 @@
 /* =====================================================================
    MyToko — Design System (Master Repo)
    Sumber:  src/input.css  ->  web/style.css  (npm run build)
-   Dikirim publik via: https://cdn.jsdelivr.net/gh/getmytoko/katalog-umkm@main/web/style.css
+   Dikirim publik via: https://cdn.jsdelivr.net/gh/getmytoko/my-toko@main/web/style.css
    Struktur kelas = "semantic utility" yang hidup di atas Tailwind CDN.
    Seluruh warna memakai CSS custom properties agar Dark Mode satu sumber.
 

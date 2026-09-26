@@ -1,6 +1,6 @@
 /* =====================================================================
    MyToko — Mesin Katalog (Centralized / CDN)
-   Repo master : github.com/getmytoko/katalog-umkm  (via jsDelivr)
+   Repo master : github.com/getmytoko/my-toko  (via jsDelivr)
    Dipakai   : index.html klien, HANYA berisi <div id="app"></div>
 
    Data spesifik toko dibaca RELATIF dari repo klien:
