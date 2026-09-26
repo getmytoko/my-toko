@@ -45,6 +45,27 @@ function formatRupiah($angka): string
     return 'Rp' . number_format($nilai, 0, ',', '.');
 }
 
+/**
+ * Ubah URL repo GitHub menjadi "pemilik/nama-repo" untuk gh repo create.
+ * Contoh: https://github.com/getmytoko/toko-bu-saris.git -> getmytoko/toko-bu-saris
+ */
+function ambilOwnerRepo(string $url): ?string
+{
+    $jalur = (string) (parse_url($url, PHP_URL_PATH) ?? '');
+    $jalur = preg_replace('/\.git$/i', '', trim($jalur, '/')) ?? '';
+    if ($jalur === '') {
+        return null;
+    }
+    $bagian = array_values(array_filter(explode('/', $jalur), static function (string $p): bool {
+        return $p !== '';
+    }));
+    if (count($bagian) < 2) {
+        return null;
+    }
+
+    return $bagian[0] . '/' . $bagian[1];
+}
+
 function buatDir(string $dir): ?string
 {
     if (is_dir($dir)) {
@@ -162,11 +183,15 @@ function simpanGambar(array $file, string $imagesDir, string $prefix, array $all
     return ['ok' => true, 'path' => 'images/' . $nama];
 }
 
-function jalankanPerintah(string $cwd, string $perintah): array
+function jalankanPerintah(string $cwd, string $perintah, array $envTambahan = []): array
 {
     $deskriptor = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
-    // GABUNGKAN environment saat ini + nonaktifkan prompt agar push tidak menggantung.
-    $env        = array_merge(getenv(), ['GIT_TERMINAL_PROMPT' => '0']);
+    // GABUNGKAN environment saat ini + nonaktifkan prompt agar push/gh tidak menggantung.
+    $env        = array_merge(
+        getenv(),
+        ['GIT_TERMINAL_PROMPT' => '0', 'GH_PROMPT_DISABLED' => '1'],
+        $envTambahan
+    );
     $proses     = @proc_open($perintah, $deskriptor, $pipa, $cwd, $env);
     if (!is_resource($proses)) {
         return ['ok' => false, 'out' => 'Gagal menjalankan: ' . $perintah];
@@ -300,9 +325,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && cleanStr($_POST['action'] ?? '') ==
             }
         }
         if ($terisi['github_url'] !== '') {
-            $url = filter_var($terisi['github_url'], FILTER_VALIDATE_URL);
-            if ($url === false || stripos((string) $url, '://') === false) {
-                $errors[] = 'URL Repo GitHub target tidak valid (boleh dikosongkan untuk skip push).';
+            $url  = filter_var($terisi['github_url'], FILTER_VALIDATE_URL);
+            $host = strtolower((string) parse_url((string) $url, PHP_URL_HOST));
+            if ($url === false || $host !== 'github.com' || ambilOwnerRepo((string) $url) === null) {
+                $errors[] = 'URL Repo GitHub target tidak valid. Gunakan format https://github.com/nama-pengguna/nama-repo (boleh dikosongkan untuk skip push).';
             } else {
                 $terisi['github_url'] = (string) $url;
             }
@@ -315,6 +341,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && cleanStr($_POST['action'] ?? '') ==
         $imagesDir = $storeRoot . DIRECTORY_SEPARATOR . 'images';
         $adminDir  = $storeRoot . DIRECTORY_SEPARATOR . 'admin';
 
+        // Hanya folder yang BENAR-BENAR dibuat skrip ini yang boleh dihapus saat gagal.
+        // Tanpa flag ini, submit ulang nama toko yang sudah ada + satu field tidak valid
+        // akan menghapus folder toko lama milik pengguna.
+        $dibuatSkrip = false;
+
         if (!$errors && file_exists($storeRoot)) {
             $errors[] = 'Folder toko sudah ada: ' . $storeRoot . ' — hapus/rename dulu atau gunakan nama toko lain.';
         }
@@ -325,6 +356,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && cleanStr($_POST['action'] ?? '') ==
                 if ($err !== null) {
                     $errors[] = $err;
                     break;
+                }
+                if ($dir === $storeRoot) {
+                    $dibuatSkrip = true;
                 }
             }
         }
@@ -445,17 +479,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && cleanStr($_POST['action'] ?? '') ==
                     $r = jalankanPerintah($storeRoot, 'git init');
                     $gitLog[] = $r['ok'] ? 'OK: git init' : 'GAGAL git init: ' . $r['out'];
 
-                    if ($terisi['github_url'] !== '') {
-                        jalankanPerintah($storeRoot, 'git remote remove origin');
-                        $r = jalankanPerintah($storeRoot, 'git remote add origin ' . escapeshellarg($terisi['github_url']));
-                        $gitLog[] = $r['ok'] ? 'OK: remote origin -> ' . $terisi['github_url'] : 'GAGAL set remote: ' . $r['out'];
-                    }
-
                     $r = jalankanPerintah($storeRoot, 'git add .');
                     $gitLog[] = $r['ok'] ? 'OK: git add .' : 'GAGAL git add: ' . $r['out'];
 
                     $pesan = 'Initial setup for ' . $terisi['nama_toko'] . ' via setup.php';
-                    $r = jalankanPerintah($storeRoot, 'git commit -m ' . escapeshellarg('Initial setup for ' . $terisi['nama_toko'] . ' via setup.php'));
+                    $r = jalankanPerintah($storeRoot, 'git commit -m ' . escapeshellarg($pesan));
                     if ($r['ok']) {
                         $gitLog[] = 'OK: git commit';
                     } elseif (stripos($r['out'], 'nothing to commit') !== false) {
@@ -467,26 +495,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && cleanStr($_POST['action'] ?? '') ==
                     $r = jalankanPerintah($storeRoot, 'git branch -M main');
                     $gitLog[] = $r['ok'] ? 'OK: git branch -M main' : 'GAGAL git branch: ' . $r['out'];
 
-                    if ($terisi['github_url'] !== '') {
-                        $r = jalankanPerintah($storeRoot, 'git push -u origin main');
-                        if ($r['ok']) {
-                            $gitLog[] = 'OK: git push -u origin main';
-                        } else {
-                            $gitLog[] = 'GAGAL git push: ' . $r['out'];
-                            $gitLog[] = 'Coba manual dari folder toko: <code>git push -u origin main</code>'
-                                      . ' (pastikan SSH/PAT sudah dikonfigurasi).';
-                        }
-                    } else {
+                    if ($terisi['github_url'] === '') {
                         $gitLog[] = 'SKIP: git push dilewati (URL repo GitHub tidak diisi).';
+                    } else {
+                        $ownerRepo = ambilOwnerRepo($terisi['github_url']);
+                        $terpush   = false;
+
+                        // ----Upaya 1: buat repo otomatis lewat gh CLI ----
+                        $cekGh = jalankanPerintah($storeRoot, 'gh --version');
+                        if ($ownerRepo === null) {
+                            $gitLog[] = 'INFO: URL repo tidak bisa diurai — lewati pembuatan repo otomatis.';
+                        } elseif (!$cekGh['ok']) {
+                            $gitLog[] = 'INFO: gh CLI tidak tersedia — buat repo di github.com lebih dulu, lalu tekan ulang.';
+                        } else {
+                            $cekAuth = jalankanPerintah($storeRoot, 'gh auth status');
+                            if (!$cekAuth['ok']) {
+                                $gitLog[] = 'INFO: gh belum login — jalankan <code>gh auth login</code> untuk membuat repo otomatis.';
+                            } else {
+                                $r = jalankanPerintah(
+                                    $storeRoot,
+                                    'gh repo create ' . escapeshellarg($ownerRepo)
+                                    . ' --public --source=. --remote=origin --push'
+                                );
+                                if ($r['ok']) {
+                                    $gitLog[] = 'OK: repo GitHub dibuat (publik) via gh: ' . $ownerRepo;
+                                    $terpush  = true;
+                                } else {
+                                    $gitLog[] = 'INFO: gh repo create tidak berhasil (' . $r['out'] . ') — lanjut ke cara manual.';
+                                }
+                            }
+                        }
+
+                        // ----Upaya 2: repo sudah ada / gh tidak bisa dipakai ----
+                        if (!$terpush) {
+                            jalankanPerintah($storeRoot, 'git remote remove origin');
+                            $r = jalankanPerintah($storeRoot, 'git remote add origin ' . escapeshellarg($terisi['github_url']));
+                            $gitLog[] = $r['ok'] ? 'OK: remote origin -> ' . $terisi['github_url'] : 'GAGAL set remote: ' . $r['out'];
+
+                            $r = jalankanPerintah($storeRoot, 'git push -u origin main');
+                            if ($r['ok']) {
+                                $gitLog[] = 'OK: git push -u origin main';
+                            } else {
+                                $gitLog[] = 'GAGAL git push: ' . $r['out'];
+                                $gitLog[] = 'Coba manual dari folder toko: <code>git push -u origin main</code>'
+                                          . ' (pastikan SSH/PAT sudah dikonfigurasi).';
+                            }
+                        }
                     }
                 }
             }
         }
 
-        // bersihkan folder toko yang gagal dibuat sebagian
-        if ($errors && isset($storeRoot) && file_exists($storeRoot)) {
+        // bersihkan HANYA folder yang dibuat oleh skrip pada proses ini
+        if ($errors && $dibuatSkrip && file_exists($storeRoot)) {
             hapusRekursif($storeRoot);
-            $errors[] = 'Folder toko yang gagal telah dihapus otomatis.';
+            $errors[] = 'Folder toko yang gagal dibuat telah dihapus otomatis.';
         }
     }
 }
@@ -719,7 +782,8 @@ $barisProdukAwal    = $terisi['produk'] ?: [[]];
           <div class="field">
             <label for="github_url">URL Repo GitHub target (opsional)</label>
             <input id="github_url" name="github_url" type="url" value="<?= escapeHtml($terisi['github_url']) ?>" placeholder="https://github.com/akun/nama-repo">
-            <p class="hint">Jika diisi, skrip otomatis <code>git init</code> di folder toko lalu <code>git push -u origin main</code>.
+            <p class="hint">Jika diisi, skrip membuat repo GitHub (publik) lalu mengirim commit — <code>git init</code>, <code>git add</code>, <code>git commit</code>, <code>gh repo create</code> (bila <code>gh</code> sudah login), <code>git push</code>.
+              Kalau <code>gh</code> tidak tersedia, buat repo kosong di github.com lebih dulu dengan nama yang sama, lalu skrip tetap set remote origin + push.
               Kosongkan untuk hanya membuat struktur + commit lokal. Jangan gunakan repo ini (MyToko) untuk menghindari repo bersarang.</p>
           </div>
         </div>
